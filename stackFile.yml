@@ -1,0 +1,35 @@
+version: '1.0'
+services:
+  - name: minio
+    type: docker
+    image: minio/minio
+    version: latest
+    ports:
+      - 9000
+    remoteAccess: true
+    volumes:
+      - directory: /data
+    startCommand: minio server /data
+    env:
+      MINIO_ACCESS_KEY: "{{=randomString(32)}}"
+      MINIO_SECRET_KEY: "{{=randomString(32)}}"
+    deployTo:
+      - minio
+
+  - name: web
+    type: nginx
+    version: 1.15
+    ports:
+      - 80
+      - 443
+    remoteAccess: true
+    serviceFiles:
+      - name: minio
+    deployTo:
+      - minio
+
+hosts:
+  - name: minio
+    requirements:
+      cores: 1
+      memory: 1
